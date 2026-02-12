@@ -1,6 +1,18 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  throw new Error(
+    "環境変数が設定されていません。GOOGLE_CLIENT_IDとGOOGLE_CLIENT_SECRETを設定してください。"
+  );
+}
+
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error(
+    "環境変数NEXTAUTH_SECRETが設定されていません。"
+  );
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Google({
@@ -30,6 +42,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   pages: {
     signIn: "/login",
+    error: "/login",
   },
+  secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
+  debug: process.env.NODE_ENV === "development",
 });
