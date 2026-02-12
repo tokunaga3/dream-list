@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import DreamForm from "@/components/DreamForm";
+import DreamManager from "@/components/DreamManager";
 import SignOutButton from "@/components/SignOutButton";
 
 export default async function Home() {
@@ -25,7 +25,7 @@ export default async function Home() {
             </div>
             <SignOutButton />
           </div>
-          <DreamForm />
+          <DreamManager />
         </div>
       </div>
     </main>

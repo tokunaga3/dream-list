@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { dream } = await request.json();
+    const { dream, spreadsheetId: userSpreadsheetId } = await request.json();
 
     if (!dream || typeof dream !== "string") {
       return NextResponse.json(
@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
 
     const sheets = google.sheets({ version: "v4", auth: oauth2Client });
 
-    // スプレッドシートIDを環境変数から取得、または新規作成
-    let spreadsheetId = process.env.SPREADSHEET_ID;
+    // スプレッドシートIDの優先順位: ユーザー指定 > 新規作成
+    let spreadsheetId = userSpreadsheetId ;
     const sheetName = "Dreams";
 
     if (!spreadsheetId) {

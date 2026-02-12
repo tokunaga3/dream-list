@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 
-export default function DreamForm() {
+interface DreamFormProps {
+  spreadsheetId: string | null;
+}
+
+export default function DreamForm({ spreadsheetId: userSpreadsheetId }: DreamFormProps) {
   const [dream, setDream] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
+  const [resultSpreadsheetId, setResultSpreadsheetId] = useState<string | null>(null);
   const [submittedDream, setSubmittedDream] = useState<string | null>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -38,7 +42,10 @@ export default function DreamForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ dream: dreamToSubmit }),
+        body: JSON.stringify({ 
+          dream: dreamToSubmit,
+          spreadsheetId: userSpreadsheetId 
+        }),
       });
 
       const data = await response.json();
@@ -53,7 +60,7 @@ export default function DreamForm() {
         
         // スプレッドシートIDを保存
         if (data.spreadsheetId) {
-          setSpreadsheetId(data.spreadsheetId);
+          setResultSpreadsheetId(data.spreadsheetId);
         }
       } else {
         setMessage({
@@ -117,11 +124,11 @@ export default function DreamForm() {
         </div>
       )}
 
-      {spreadsheetId && (
+      {resultSpreadsheetId && (
         <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
           <p className="text-sm mb-2">📊 スプレッドシートで確認：</p>
           <a
-            href={`https://docs.google.com/spreadsheets/d/${spreadsheetId}`}
+            href={`https://docs.google.com/spreadsheets/d/${resultSpreadsheetId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm underline hover:text-blue-600 dark:hover:text-blue-300 break-all"
