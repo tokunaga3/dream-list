@@ -10,32 +10,98 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
   const [spreadsheetId, setSpreadsheetId] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    // ローカルストレージから保存されたIDを読み込む
-    const saved = localStorage.getItem("spreadsheetId");
-    if (saved) {
-      setSavedId(saved);
-      onSpreadsheetIdChange(saved);
-    }
+    // データベースから保存されたIDを読み込む
+    const fetchSpreadsheetId = async () => {
+      try {
+        const response = await fetch("/api/user/spreadsheet");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.spreadsheetId) {
+            setSavedId(data.spreadsheetId);
+            onSpreadsheetIdChange(data.spreadsheetId);
+          }
+        }
+      } catch (error) {
+        console.error("スプレッドシートIDの取得に失敗:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSpreadsheetId();
   }, [onSpreadsheetIdChange]);
 
-  const handleSave = () => {
-    if (spreadsheetId.trim()) {
-      localStorage.setItem("spreadsheetId", spreadsheetId.trim());
-      setSavedId(spreadsheetId.trim());
-      onSpreadsheetIdChange(spreadsheetId.trim());
-      setIsEditing(false);
-      setSpreadsheetId("");
+  const handleSave = async () => {
+    if (!spreadsheetId.trim()) return;
+
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/user/spreadsheet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ spreadsheetId: spreadsheetId.trim() }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSavedId(data.spreadsheetId);
+        onSpreadsheetIdChange(data.spreadsheetId);
+        setIsEditing(false);
+        setSpreadsheetId("");
+      } else {
+        alert("スプレッドシートIDの保存に失敗しました");
+      }
+    } catch (error) {
+      console.error("保存エラー:", error);
+      alert("保存中にエラーが発生しました");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleClear = () => {
-    localStorage.removeItem("spreadsheetId");
-    setSavedId(null);
-    onSpreadsheetIdChange(null);
-    setSpreadsheetId("");
+  const handleClear = async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/user/spreadsheet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ spreadsheetId: null }),
+      });
+
+      if (response.ok) {
+        setSavedId(null);
+        onSpreadsheetIdChange(null);
+        setSpreadsheetId("");
+      } else {
+        alert("スプレッドシートIDのクリアに失敗しました");
+      }
+    } catch (error) {
+      console.error("クリアエラー:", error);
+      alert("クリア中にエラーが発生しました");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6">
+        <div className="flex items-center justify-center">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            読み込み中...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6">
@@ -66,15 +132,17 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
           <div className="flex gap-2">
             <button
               onClick={() => setIsEditing(true)}
-              className="flex-1 text-xs px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              disabled={isSaving}
+              className="flex-1 text-xs px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
               変更
             </button>
             <button
               onClick={handleClear}
-              className="flex-1 text-xs px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              disabled={isSaving}
+              className="flex-1 text-xs px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
-              クリア
+              {isSaving ? "処理中..." : "クリア"}
             </button>
           </div>
         </div>
@@ -90,6 +158,7 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
               onChange={(e) => setSpreadsheetId(e.target.value)}
               placeholder="例: 1gnUEz7QFR1Cgp33-MZHOt..."
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+              disabled={isSaving}
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               スプレッドシートのURLから取得できます
@@ -98,17 +167,18 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
           <div className="flex gap-2">
             <button
               onClick={handleSave}
-              disabled={!spreadsheetId.trim()}
+              disabled={!spreadsheetId.trim() || isSaving}
               className="flex-1 text-xs px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              保存
+              {isSaving ? "保存中..." : "保存"}
             </button>
             <button
               onClick={() => {
                 setIsEditing(false);
                 setSpreadsheetId("");
               }}
-              className="flex-1 text-xs px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              disabled={isSaving}
+              className="flex-1 text-xs px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
               キャンセル
             </button>
