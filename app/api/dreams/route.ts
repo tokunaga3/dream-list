@@ -100,10 +100,10 @@ export async function POST(request: NextRequest) {
       // ヘッダー行を追加
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `${sheetName}!A1:C1`,
+        range: `${sheetName}!A1:B1`,
         valueInputOption: "RAW",
         requestBody: {
-          values: [["日時", "夢", "ユーザー"]],
+          values: [["日時", "夢"]],
         },
       });
       
@@ -162,10 +162,10 @@ export async function POST(request: NextRequest) {
           // ヘッダー行を追加
           await sheets.spreadsheets.values.update({
             spreadsheetId,
-            range: `${sheetName}!A1:C1`,
+            range: `${sheetName}!A1:B1`,
             valueInputOption: "RAW",
             requestBody: {
-              values: [["日時", "夢", "ユーザー"]],
+              values: [["日時", "夢"]],
             },
           });
         }
@@ -175,18 +175,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 現在の日時とユーザー情報と共に夢を追加
+    // 現在の日時と共に夢を追加
     const timestamp = new Date().toLocaleString("ja-JP", {
       timeZone: "Asia/Tokyo",
     });
-    const userName = session.user?.name || "Unknown";
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${sheetName}!A:C`,
+      range: `${sheetName}!A:B`,
       valueInputOption: "RAW",
       requestBody: {
-        values: [[timestamp, dream, userName]],
+        values: [[timestamp, dream]],
       },
     });
 
