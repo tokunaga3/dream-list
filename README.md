@@ -48,25 +48,15 @@ turso db tokens create dream-list
 
 1. [Google Cloud Console](https://console.cloud.google.com/)にアクセス
 2. 新しいプロジェクトを作成
-3. **APIとサービス** > **認証情報**に移動
-4. **OAuth 2.0 クライアント ID**を作成
+3. **APIとサービス** > **ライブラリ**で以下を有効化:
+   - **Google Sheets API** ← スプレッドシート読み書き用
+   - **Google Drive API** ← スプレッドシート作成用（必須）
+4. **APIとサービス** > **認証情報**に移動
+5. **OAuth 2.0 クライアント ID**を作成
    - アプリケーションの種類: ウェブアプリケーション
-   - 承認済みのリダイレクトURI: `http://localhost:3000/api/auth/callback/google`
-5. **APIとサービス** > **ライブラリ**で以下を有効化:
-   - Google Sheets API
-   - Google Drive API
-
-### 3. Google Cloud Console設定
-
-1. [Google Cloud Console](https://console.cloud.google.com/)にアクセス
-2. 新しいプロジェクトを作成
-3. **APIとサービス** > **認証情報**に移動
-4. **OAuth 2.0 クライアント ID**を作成
-   - アプリケーションの種類: ウェブアプリケーション
-   - 承認済みのリダイレクトURI: `http://localhost:3000/api/auth/callback/google`
-5. **APIとサービス** > **ライブラリ**で以下を有効化:
-   - Google Sheets API
-   - Google Drive API
+   - 承認済みのリダイレクトURI: 
+     - `http://localhost:3000/api/auth/callback/google`
+     - 本番環境のURL（例: `https://your-domain.netlify.app/api/auth/callback/google`）
 
 ### 4. 環境変数の設定
 
@@ -108,6 +98,8 @@ npm run generate-key
 ```bash
 npm run db:init
 ```
+
+### 6. 開発サーバーの起動
 
 ```bash
 npm run dev
@@ -247,12 +239,31 @@ turso db tokens create dream-list
 - リダイレクトURIが正しいか確認
 - 環境変数が正しく設定されているか確認
 
-### スプレッドシートに書き込めない
+### スプレッドシートに書き込めない / 「Insufficient Permission」エラー
 
-- Google Sheets APIが有効になっているか確認
-- Google Drive APIが有効になっているか確認
-- OAuth同意画面でスコープ `https://www.googleapis.com/auth/spreadsheets` が設定されているか確認
-- 指定したスプレッドシートIDが正しいか確認
+このエラーは、Google APIの権限が不足している場合に発生します。
+
+**解決方法:**
+
+1. **Google Drive APIが有効になっているか確認**
+   - [Google Cloud Console](https://console.cloud.google.com/) → APIとサービス → ライブラリ
+   - 「Google Drive API」を検索して有効化
+
+2. **再ログインして権限を再取得**
+   - アプリからログアウト
+   - ブラウザのキャッシュをクリア（推奨）
+   - 再度ログイン
+   - Googleの権限確認画面で、以下の権限が要求されていることを確認:
+     - Google Sheetsの表示と管理
+     - Google Driveファイルの作成と管理
+
+3. **OAuth同意画面のスコープを確認**（Google Cloud Console）
+   - `https://www.googleapis.com/auth/spreadsheets`
+   - `https://www.googleapis.com/auth/drive.file`
+
+4. **既存のスプレッドシートを使用する場合**
+   - 設定タブで既存のスプレッドシートIDを登録してください
+   - そのスプレッドシートに対する編集権限があることを確認してください
 
 ### データベースエラー
 
