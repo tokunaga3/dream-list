@@ -8,16 +8,15 @@ type TabType = "record" | "settings";
 
 export default function DreamManager() {
   const [activeTab, setActiveTab] = useState<TabType>("record");
-  const [spreadsheetIdKey, setSpreadsheetIdKey] = useState(0);
 
   const handleSpreadsheetCreated = useCallback((spreadsheetId: string) => {
-    // スプレッドシートが新規作成されたら、設定画面を更新
-    setSpreadsheetIdKey(prev => prev + 1);
+    // スプレッドシートが新規作成されたら、設定タブに切り替え（オプション）
+    // 必要に応じてコメントアウトを解除
+    // setActiveTab("settings");
   }, []);
 
   const handleSpreadsheetIdChange = useCallback((id: string | null) => {
-    // ユーザーが設定を変更したら、フォームを更新
-    setSpreadsheetIdKey(prev => prev + 1);
+    // スプレッドシートIDが変更された時の処理（必要に応じて実装）
   }, []);
 
   return (
@@ -53,7 +52,6 @@ export default function DreamManager() {
         )}
         {activeTab === "settings" && (
           <SpreadsheetSettings 
-            key={spreadsheetIdKey}
             onSpreadsheetIdChange={handleSpreadsheetIdChange} 
           />
         )}

@@ -31,6 +31,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 入力の長さを制限（10,000文字まで）
+    if (dream.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Dream text cannot be empty" },
+        { status: 400 }
+      );
+    }
+
+    if (dream.length > 10000) {
+      return NextResponse.json(
+        { error: "Dream text is too long (max 10,000 characters)" },
+        { status: 400 }
+      );
+    }
+
     // Google認証情報を設定
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials({
@@ -50,7 +65,13 @@ export async function POST(request: NextRequest) {
     if (userResult.rows.length > 0 && userResult.rows[0].spreadsheet_id) {
       // DBに保存されている暗号化されたIDを復号化
       const encryptedId = userResult.rows[0].spreadsheet_id as string;
-      spreadsheetId = decrypt(encryptedId);
+      try {
+        spreadsheetId = decrypt(encryptedId);
+      } catch (decryptError) {
+        console.error("Failed to decrypt spreadsheet ID:", decryptError);
+        // 復号化に失敗した場合は新規作成する
+        spreadsheetId = null;
+      }
     }
 
     const sheetName = "Dreams";
@@ -86,7 +107,9 @@ export async function POST(request: NextRequest) {
         },
       });
       
-      console.log(`新しいスプレッドシートを作成しました: https://docs.google.com/spreadsheets/d/${spreadsheetId}`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`新しいスプレッドシートを作成しました: https://docs.google.com/spreadsheets/d/${spreadsheetId}`);
+      }
 
       // 新規作成したスプレッドシートIDをDBに保存
       const encryptedId = encrypt(spreadsheetId);
@@ -105,7 +128,9 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      console.log(`スプレッドシートIDをDBに保存しました (暗号化済み)`);
+      if (process.env.NODE_ENV === "development") {
+        console.log(`スプレッドシートIDをDBに保存しました (暗号化済み)`);
+      }
     } else {
       // 既存のスプレッドシートを使用する場合、Dreamsシートの存在を確認
       try {

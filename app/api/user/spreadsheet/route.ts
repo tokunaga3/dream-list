@@ -26,7 +26,17 @@ export async function GET(request: NextRequest) {
 
     // 暗号化されたスプレッドシートIDを復号化
     const encryptedId = result.rows[0].spreadsheet_id as string | null;
-    const spreadsheetId = encryptedId ? decrypt(encryptedId) : null;
+    let spreadsheetId: string | null = null;
+
+    if (encryptedId) {
+      try {
+        spreadsheetId = decrypt(encryptedId);
+      } catch (decryptError) {
+        console.error("Failed to decrypt spreadsheet ID:", decryptError);
+        // 復号化に失敗した場合はnullを返す（データが壊れている可能性）
+        spreadsheetId = null;
+      }
+    }
 
     return NextResponse.json({
       spreadsheetId,

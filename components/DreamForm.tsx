@@ -21,8 +21,18 @@ export default function DreamForm({ onSpreadsheetCreated }: DreamFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!dream.trim()) {
+    const trimmedDream = dream.trim();
+
+    if (!trimmedDream) {
       setMessage({ type: "error", text: "夢を入力してください" });
+      return;
+    }
+
+    if (trimmedDream.length > 10000) {
+      setMessage({ 
+        type: "error", 
+        text: `入力が長すぎます（${trimmedDream.length.toLocaleString()}文字 / 最大10,000文字）` 
+      });
       return;
     }
 

@@ -33,10 +33,25 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
     };
 
     fetchSpreadsheetId();
-  }, [onSpreadsheetIdChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 初回マウント時のみ実行
 
   const handleSave = async () => {
-    if (!spreadsheetId.trim()) return;
+    const trimmedId = spreadsheetId.trim();
+    
+    if (!trimmedId) return;
+
+    // スプレッドシートIDの基本的な形式検証
+    // Google SheetsのIDは通常44文字の英数字とハイフン、アンダースコア
+    if (trimmedId.length < 20 || trimmedId.length > 100) {
+      alert("スプレッドシートIDの形式が正しくありません");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(trimmedId)) {
+      alert("スプレッドシートIDには英数字、ハイフン、アンダースコアのみ使用できます");
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -45,7 +60,7 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ spreadsheetId: spreadsheetId.trim() }),
+        body: JSON.stringify({ spreadsheetId: trimmedId }),
       });
 
       if (response.ok) {

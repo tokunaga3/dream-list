@@ -6,6 +6,13 @@ if (!process.env.ENCRYPTION_KEY) {
 
 // 暗号化キーは32バイト（256ビット）である必要があります
 const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY, "hex");
+
+if (ENCRYPTION_KEY.length !== 32) {
+  throw new Error(
+    `ENCRYPTION_KEYは64文字の16進数文字列である必要があります（現在: ${process.env.ENCRYPTION_KEY.length}文字）`
+  );
+}
+
 const ALGORITHM = "aes-256-gcm";
 
 /**
