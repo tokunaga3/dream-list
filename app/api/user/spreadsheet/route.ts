@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { encrypt, decrypt } from "@/lib/crypto";
 
 // ユーザーのスプレッドシートIDを取得
 export async function GET(request: NextRequest) {
@@ -23,8 +24,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ spreadsheetId: null });
     }
 
+    // 暗号化されたスプレッドシートIDを復号化
+    const encryptedId = result.rows[0].spreadsheet_id as string | null;
+    const spreadsheetId = encryptedId ? decrypt(encryptedId) : null;
+
     return NextResponse.json({
-      spreadsheetId: result.rows[0].spreadsheet_id,
+      spreadsheetId,
     });
   } catch (error) {
     console.error("Error fetching spreadsheet ID:", error);
@@ -62,6 +67,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // スプレッドシートIDを暗号化
+    const encryptedId = encrypt(spreadsheetId);
+
     // ユーザーが存在するか確認
     const userResult = await db.execute({
       sql: "SELECT email FROM users WHERE email = ?",
@@ -72,20 +80,19 @@ export async function POST(request: NextRequest) {
       // ユーザーが存在しない場合は新規作成
       await db.execute({
         sql: `
-          INSERT INTO users (email, name, spreadsheet_id)
-          VALUES (?, ?, ?)
+          INSERT INTO users (email, spreadsheet_id)
+          VALUES (?, ?)
         `,
         args: [
           session.user.email,
-          session.user.name || null,
-          spreadsheetId,
+          encryptedId,
         ],
       });
     } else {
-      // ユーザーが存在する場合は更新（nameも更新）
+      // ユーザーが存在する場合は更新
       await db.execute({
-        sql: "UPDATE users SET name = ?, spreadsheet_id = ?, updated_at = unixepoch() WHERE email = ?",
-        args: [session.user.name || null, spreadsheetId, session.user.email],
+        sql: "UPDATE users SET spreadsheet_id = ?, updated_at = unixepoch() WHERE email = ?",
+        args: [encryptedId, session.user.email],
       });
     }
 

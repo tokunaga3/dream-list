@@ -16,7 +16,6 @@ export async function initDatabase() {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS users (
       email TEXT PRIMARY KEY,
-      name TEXT,
       spreadsheet_id TEXT,
       created_at INTEGER DEFAULT (unixepoch()),
       updated_at INTEGER DEFAULT (unixepoch())

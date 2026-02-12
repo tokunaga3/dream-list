@@ -7,8 +7,9 @@ Next.jsで作成された、あなたの夢をGoogle Sheetsに記録するWebア
 - ✨ Googleアカウントでログイン
 - 📝 シンプルなフォームで夢を記録
 - 📊 Google Sheetsに自動保存
-- � スプレッドシートIDをデータベースに保存（Turso）
+- 💾 スプレッドシートIDをデータベースに保存（Turso）
 - 🔐 セッション管理（14日間有効、自動更新）
+- 🔒 スプレッドシートIDをAES-256-GCM暗号化
 - 🎨 ダークモード対応
 - 📱 レスポンシブデザイン
 
@@ -78,20 +79,27 @@ cp .env.example .env
 ```env
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-secret-key-here
-### 6. 開発サーバーの起動
-
 
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 TURSO_DATABASE_URL=libsql://your-database.turso.io
 TURSO_AUTH_TOKEN=your-turso-auth-token
+
+ENCRYPTION_KEY=your-encryption-key-here
 ```
 
 **NEXTAUTH_SECRET**の生成:
 ```bash
 openssl rand -base64 32
 ```
+
+**ENCRYPTION_KEY**の生成:
+```bash
+npm run generate-key
+```
+
+このキーはスプレッドシートIDを安全に暗号化するために使用されます。
 
 ### 5. データベースの初期化
 

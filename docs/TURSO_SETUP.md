@@ -59,7 +59,24 @@ eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...
 ```env
 TURSO_DATABASE_URL=libsql://dream-list-your-username.turso.io
 TURSO_AUTH_TOKEN=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...
+ENCRYPTION_KEY=your-generated-encryption-key-here
 ```
+
+#### 暗号化キーの生成
+
+スプレッドシートIDを安全に保存するため、暗号化キーを生成します：
+
+```bash
+npm run generate-key
+```
+
+出力されたキー（64文字の16進数文字列）を`.env`ファイルの`ENCRYPTION_KEY`に設定してください。
+
+**⚠️ 重要:**
+- 暗号化キーは絶対に公開しないでください
+- Git リポジトリにコミットしないでください
+- 本番環境では異なるキーを使用してください
+- キーを失うと、既存の暗号化データを復号できなくなります
 
 ### 6. データベースの初期化
 
@@ -82,6 +99,9 @@ Netlify Dashboard → Site configuration → Environment variables
 以下を追加:
 - `TURSO_DATABASE_URL`: データベースのURL
 - `TURSO_AUTH_TOKEN`: 認証トークン
+- `ENCRYPTION_KEY`: 暗号化キー（`npm run generate-key`で生成）
+
+**⚠️ 重要**: 本番環境では開発環境とは異なる暗号化キーを使用してください。
 
 ### 2. デプロイ
 
@@ -96,12 +116,16 @@ git push
 ```sql
 CREATE TABLE users (
   email TEXT PRIMARY KEY,         -- メールアドレス（プライマリキー）
-  name TEXT,                      -- ユーザー名
-  spreadsheet_id TEXT,            -- Google SheetsのID
+  spreadsheet_id TEXT,            -- Google SheetsのID（AES-256-GCMで暗号化）
   created_at INTEGER,             -- 作成日時 (Unix timestamp)
   updated_at INTEGER              -- 更新日時 (Unix timestamp)
 );
 ```
+
+### セキュリティ機能
+
+- **スプレッドシートID暗号化**: ユーザーのスプレッドシートIDはAES-256-GCM暗号化方式で保護されています
+- **環境変数**: 暗号化キーは環境変数で管理され、コードには含まれません
 
 ### スキーマのマイグレーション
 
@@ -115,7 +139,7 @@ npm run db:migrate
 1. 既存データをバックアップ
 2. 古いテーブルを削除
 3. 新しいスキーマでテーブルを作成
-4. データを復元
+4. データを復元（`name`カラム削除、`spreadsheet_id`を暗号化）
 
 **注意**: マイグレーション前に重要なデータがある場合は、必ずバックアップを取ってください。
 
