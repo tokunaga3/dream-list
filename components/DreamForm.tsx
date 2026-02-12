@@ -3,15 +3,16 @@
 import { useState } from "react";
 
 interface DreamFormProps {
-  spreadsheetId: string | null;
+  onSpreadsheetCreated?: (spreadsheetId: string) => void;
 }
 
-export default function DreamForm({ spreadsheetId: userSpreadsheetId }: DreamFormProps) {
+export default function DreamForm({ onSpreadsheetCreated }: DreamFormProps) {
   const [dream, setDream] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [resultSpreadsheetId, setResultSpreadsheetId] = useState<string | null>(null);
   const [submittedDream, setSubmittedDream] = useState<string | null>(null);
+  const [isNewSpreadsheet, setIsNewSpreadsheet] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -43,8 +44,7 @@ export default function DreamForm({ spreadsheetId: userSpreadsheetId }: DreamFor
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 
-          dream: dreamToSubmit,
-          spreadsheetId: userSpreadsheetId 
+          dream: dreamToSubmit
         }),
       });
 
@@ -52,15 +52,26 @@ export default function DreamForm({ spreadsheetId: userSpreadsheetId }: DreamFor
 
       if (response.ok) {
         setSubmittedDream(dreamToSubmit);
+        setIsNewSpreadsheet(data.isNewSpreadsheet || false);
+        
+        let successMessage = "夢を記録しました！ ✨";
+        if (data.isNewSpreadsheet) {
+          successMessage = "新しいスプレッドシートを作成し、夢を記録しました！ 🎉";
+        }
+        
         setMessage({
           type: "success",
-          text: "夢を記録しました！ ✨",
+          text: successMessage,
         });
         setDream("");
         
         // スプレッドシートIDを保存
         if (data.spreadsheetId) {
           setResultSpreadsheetId(data.spreadsheetId);
+          // 新規作成時は親コンポーネントに通知
+          if (data.isNewSpreadsheet && onSpreadsheetCreated) {
+            onSpreadsheetCreated(data.spreadsheetId);
+          }
         }
       } else {
         setMessage({
@@ -122,6 +133,13 @@ export default function DreamForm({ spreadsheetId: userSpreadsheetId }: DreamFor
           }`}
         >
           <p className="font-semibold mb-2">{message.text}</p>
+          {message.type === "success" && isNewSpreadsheet && (
+            <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                💡 次回からはこのスプレッドシートに自動的に記録されます
+              </p>
+            </div>
+          )}
           {message.type === "success" && submittedDream && (
             <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-700">
               <p className="text-sm font-medium mb-2">記録した内容：</p>

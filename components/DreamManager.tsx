@@ -7,11 +7,17 @@ import SpreadsheetSettings from "./SpreadsheetSettings";
 type TabType = "record" | "settings";
 
 export default function DreamManager() {
-  const [userSpreadsheetId, setUserSpreadsheetId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("record");
+  const [spreadsheetIdKey, setSpreadsheetIdKey] = useState(0);
+
+  const handleSpreadsheetCreated = useCallback((spreadsheetId: string) => {
+    // スプレッドシートが新規作成されたら、設定画面を更新
+    setSpreadsheetIdKey(prev => prev + 1);
+  }, []);
 
   const handleSpreadsheetIdChange = useCallback((id: string | null) => {
-    setUserSpreadsheetId(id);
+    // ユーザーが設定を変更したら、フォームを更新
+    setSpreadsheetIdKey(prev => prev + 1);
   }, []);
 
   return (
@@ -43,10 +49,13 @@ export default function DreamManager() {
       {/* タブコンテンツ */}
       <div>
         {activeTab === "record" && (
-          <DreamForm spreadsheetId={userSpreadsheetId} />
+          <DreamForm onSpreadsheetCreated={handleSpreadsheetCreated} />
         )}
         {activeTab === "settings" && (
-          <SpreadsheetSettings onSpreadsheetIdChange={handleSpreadsheetIdChange} />
+          <SpreadsheetSettings 
+            key={spreadsheetIdKey}
+            onSpreadsheetIdChange={handleSpreadsheetIdChange} 
+          />
         )}
       </div>
     </div>

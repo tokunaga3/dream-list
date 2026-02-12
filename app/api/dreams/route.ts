@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { google } from "googleapis";
+import { db } from "@/lib/db";
+import { encrypt, decrypt } from "@/lib/crypto";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +15,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { dream, spreadsheetId: userSpreadsheetId } = await request.json();
+    if (!session.user?.email) {
+      return NextResponse.json(
+        { error: "User email not found" },
+        { status: 401 }
+      );
+    }
+
+    const { dream } = await request.json();
 
     if (!dream || typeof dream !== "string") {
       return NextResponse.json(
@@ -30,12 +39,25 @@ export async function POST(request: NextRequest) {
 
     const sheets = google.sheets({ version: "v4", auth: oauth2Client });
 
-    // スプレッドシートIDの優先順位: ユーザー指定 > 新規作成
-    let spreadsheetId = userSpreadsheetId ;
+    // DBからスプレッドシートIDを取得
+    const userResult = await db.execute({
+      sql: "SELECT spreadsheet_id FROM users WHERE email = ?",
+      args: [session.user.email],
+    });
+
+    let spreadsheetId: string | null = null;
+
+    if (userResult.rows.length > 0 && userResult.rows[0].spreadsheet_id) {
+      // DBに保存されている暗号化されたIDを復号化
+      const encryptedId = userResult.rows[0].spreadsheet_id as string;
+      spreadsheetId = decrypt(encryptedId);
+    }
+
     const sheetName = "Dreams";
+    let isNewSpreadsheet = false;
 
     if (!spreadsheetId) {
-      // スプレッドシートが指定されていない場合は新規作成
+      // スプレッドシートが登録されていない場合は新規作成
       const createResponse = await sheets.spreadsheets.create({
         requestBody: {
           properties: {
@@ -52,6 +74,7 @@ export async function POST(request: NextRequest) {
       });
 
       spreadsheetId = createResponse.data.spreadsheetId!;
+      isNewSpreadsheet = true;
 
       // ヘッダー行を追加
       await sheets.spreadsheets.values.update({
@@ -64,6 +87,25 @@ export async function POST(request: NextRequest) {
       });
       
       console.log(`新しいスプレッドシートを作成しました: https://docs.google.com/spreadsheets/d/${spreadsheetId}`);
+
+      // 新規作成したスプレッドシートIDをDBに保存
+      const encryptedId = encrypt(spreadsheetId);
+      
+      if (userResult.rows.length === 0) {
+        // ユーザーレコードが存在しない場合は作成
+        await db.execute({
+          sql: "INSERT INTO users (email, spreadsheet_id) VALUES (?, ?)",
+          args: [session.user.email, encryptedId],
+        });
+      } else {
+        // ユーザーレコードが存在する場合は更新
+        await db.execute({
+          sql: "UPDATE users SET spreadsheet_id = ?, updated_at = unixepoch() WHERE email = ?",
+          args: [encryptedId, session.user.email],
+        });
+      }
+
+      console.log(`スプレッドシートIDをDBに保存しました (暗号化済み)`);
     } else {
       // 既存のスプレッドシートを使用する場合、Dreamsシートの存在を確認
       try {
@@ -127,6 +169,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Dream added successfully",
       spreadsheetId,
+      isNewSpreadsheet,
     });
   } catch (error) {
     console.error("Error adding dream:", error);
