@@ -85,13 +85,22 @@ export default function DreamForm({ spreadsheetId: userSpreadsheetId }: DreamFor
 
   return (
     <>
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          ✨ あなたの夢を記録しよう
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          叶えたい夢や目標をGoogle Sheetsに記録できます
+        </p>
+      </div>
+      
       <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label
           htmlFor="dream"
           className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
         >
-          あなたの夢は何ですか？
+          夢・目標の内容
         </label>
         <textarea
           id="dream"

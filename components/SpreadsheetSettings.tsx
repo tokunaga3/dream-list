@@ -93,7 +93,7 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
 
   if (isLoading) {
     return (
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6">
+      <div className="py-4">
         <div className="flex items-center justify-center">
           <div className="text-sm text-gray-500 dark:text-gray-400">
             読み込み中...
@@ -104,9 +104,9 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+    <div className="py-2">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           📊 スプレッドシート設定
         </h3>
         {!isEditing && !savedId && (
@@ -185,11 +185,34 @@ export default function SpreadsheetSettings({ onSpreadsheetIdChange }: Spreadshe
           </div>
         </div>
       ) : (
-        <p className="text-xs text-gray-600 dark:text-gray-400">
-          スプレッドシートIDを設定すると、そのシートに夢が記録されます。
-          <br />
-          設定しない場合は自動的に新しいシートが作成されます。
-        </p>
+        <div className="space-y-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
+              💡 スプレッドシート設定について
+            </h4>
+            <p className="text-sm text-blue-800 dark:text-blue-300 mb-2">
+              既存のGoogle Sheetsスプレッドシートを指定すると、そのシートに夢を記録できます。
+            </p>
+            <p className="text-sm text-blue-800 dark:text-blue-300">
+              設定しない場合は、自動的に新しいスプレッドシートが作成されます。
+            </p>
+          </div>
+          
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              📝 スプレッドシートIDの取得方法
+            </h4>
+            <ol className="text-sm text-gray-700 dark:text-gray-300 space-y-2 list-decimal list-inside">
+              <li>Google Sheetsでスプレッドシートを開く</li>
+              <li>URLから長いIDをコピー
+                <div className="mt-1 text-xs font-mono bg-white dark:bg-gray-900 p-2 rounded border border-gray-200 dark:border-gray-700 break-all">
+                  https://docs.google.com/spreadsheets/d/<span className="text-purple-600 dark:text-purple-400 font-bold">1gnUEz7QFR...</span>/edit
+                </div>
+              </li>
+              <li>上の「設定する」ボタンからIDを登録</li>
+            </ol>
+          </div>
+        </div>
       )}
     </div>
   );

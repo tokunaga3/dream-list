@@ -95,16 +95,29 @@ git push
 
 ```sql
 CREATE TABLE users (
-  id TEXT PRIMARY KEY,           -- ユーザーのメールアドレス
-  email TEXT NOT NULL UNIQUE,    -- ログインメールアドレス
+  email TEXT PRIMARY KEY,         -- メールアドレス（プライマリキー）
   name TEXT,                      -- ユーザー名
   spreadsheet_id TEXT,            -- Google SheetsのID
   created_at INTEGER,             -- 作成日時 (Unix timestamp)
   updated_at INTEGER              -- 更新日時 (Unix timestamp)
 );
-
-CREATE INDEX idx_users_email ON users(email);
 ```
+
+### スキーマのマイグレーション
+
+既存のデータベースがある場合は、以下のコマンドでマイグレーションしてください：
+
+```bash
+npm run db:migrate
+```
+
+このコマンドは：
+1. 既存データをバックアップ
+2. 古いテーブルを削除
+3. 新しいスキーマでテーブルを作成
+4. データを復元
+
+**注意**: マイグレーション前に重要なデータがある場合は、必ずバックアップを取ってください。
 
 ## 🔍 データベースの確認
 

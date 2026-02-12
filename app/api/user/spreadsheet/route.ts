@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     // ユーザーが存在するか確認
     const userResult = await db.execute({
-      sql: "SELECT id FROM users WHERE email = ?",
+      sql: "SELECT email FROM users WHERE email = ?",
       args: [session.user.email],
     });
 
@@ -72,21 +72,20 @@ export async function POST(request: NextRequest) {
       // ユーザーが存在しない場合は新規作成
       await db.execute({
         sql: `
-          INSERT INTO users (id, email, name, spreadsheet_id)
-          VALUES (?, ?, ?, ?)
+          INSERT INTO users (email, name, spreadsheet_id)
+          VALUES (?, ?, ?)
         `,
         args: [
-          session.user.email, // IDとしてemailを使用
           session.user.email,
           session.user.name || null,
           spreadsheetId,
         ],
       });
     } else {
-      // ユーザーが存在する場合は更新
+      // ユーザーが存在する場合は更新（nameも更新）
       await db.execute({
-        sql: "UPDATE users SET spreadsheet_id = ?, updated_at = unixepoch() WHERE email = ?",
-        args: [spreadsheetId, session.user.email],
+        sql: "UPDATE users SET name = ?, spreadsheet_id = ?, updated_at = unixepoch() WHERE email = ?",
+        args: [session.user.name || null, spreadsheetId, session.user.email],
       });
     }
 
