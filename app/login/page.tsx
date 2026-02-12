@@ -1,11 +1,29 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+
   const handleGoogleSignIn = () => {
     signIn("google", { callbackUrl: "/" });
   };
+
+  const getErrorMessage = (error: string | null) => {
+    switch (error) {
+      case "SessionExpired":
+        return "セッションの有効期限が切れました。再度ログインしてください。";
+      case "Configuration":
+        return "認証設定にエラーがあります。管理者にお問い合わせください。";
+      default:
+        return null;
+    }
+  };
+
+  const errorMessage = getErrorMessage(error);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
@@ -18,6 +36,14 @@ export default function LoginPage() {
             あなたの夢を記録しましょう
           </p>
         </div>
+
+        {errorMessage && (
+          <div className="mb-6 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              {errorMessage}
+            </p>
+          </div>
+        )}
         
         <button
           onClick={handleGoogleSignIn}
@@ -45,5 +71,13 @@ export default function LoginPage() {
         </button>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
