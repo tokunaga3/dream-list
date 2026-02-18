@@ -29,8 +29,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   session: {
     strategy: "jwt",
-    maxAge: 14 * 24 * 60 * 60, // 14日間（秒単位）
+    maxAge: 30 * 24 * 60 * 60, // 30日間（秒単位）
     updateAge: 24 * 60 * 60, // 24時間ごとにセッションを更新
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 30 * 24 * 60 * 60, // 30日間（秒単位）
+      },
+    },
   },
   callbacks: {
     async jwt({ token, account, user }) {
