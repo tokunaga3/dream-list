@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import Link from "next/link";
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -32,9 +33,15 @@ function LoginContent() {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
             夢リスト 🌟
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            あなたの夢を記録しましょう
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            あなたの夢・目標を Google Sheets に記録するアプリ
           </p>
+          <ul className="text-sm text-gray-500 dark:text-gray-400 space-y-1 text-left inline-block">
+            <li>✅ Google アカウントでかんたんログイン</li>
+            <li>✅ 夢を入力するだけで自動的にシートへ記録</li>
+            <li>✅ 初回利用時にスプレッドシートを自動作成</li>
+            <li>✅ データはあなた自身の Google Sheets に保存</li>
+          </ul>
         </div>
 
         {errorMessage && (
@@ -69,6 +76,18 @@ function LoginContent() {
           </svg>
           Googleでログイン
         </button>
+
+        <p className="mt-6 text-xs text-gray-500 dark:text-gray-400 text-center leading-relaxed">
+          ログインすることで、
+          <Link href="/privacy" className="text-purple-600 dark:text-purple-400 hover:underline">
+            プライバシーポリシー
+          </Link>
+          および
+          <Link href="/terms" className="text-purple-600 dark:text-purple-400 hover:underline">
+            利用規約
+          </Link>
+          に同意したものとみなされます。
+        </p>
       </div>
     </main>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Dream List - 夢リスト",
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="ja">
       <body>
         <Providers>{children}</Providers>
+        <Footer />
       </body>
     </html>
   );
