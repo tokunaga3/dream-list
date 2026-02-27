@@ -10,7 +10,7 @@ function LoginContent() {
   const error = searchParams.get("error");
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/" });
+    signIn("google", { callbackUrl: "/dashboard" });
   };
 
   const getErrorMessage = (error: string | null) => {
