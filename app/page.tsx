@@ -90,15 +90,9 @@ export default async function LandingPage() {
           </div>
         </div>
 
-        {/* CTAセクション */}
+        {/* フッターリンク */}
         <div className="text-center">
-          <Link
-            href="/login"
-            className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition-colors text-lg"
-          >
-            ログインして始める
-          </Link>
-          <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             <Link href="/privacy" className="hover:underline text-purple-600 dark:text-purple-400">
               プライバシーポリシー
             </Link>
