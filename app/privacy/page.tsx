@@ -13,7 +13,7 @@ export default function PrivacyPage() {
           プライバシーポリシー
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-          最終更新日: 2025年1月
+          最終更新日: 2026年3月
         </p>
 
         <section className="mb-8">
@@ -62,8 +62,8 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2 ml-2">
             <li>
-              <span className="font-medium">Google Sheets API</span>（<code className="text-sm bg-gray-100 dark:bg-gray-700 px-1 rounded">spreadsheets</code>）:
-              ユーザーのスプレッドシートへの読み取り・書き込み、および新規スプレッドシートの作成に使用します。
+              <span className="font-medium">Google Drive API</span>（<code className="text-sm bg-gray-100 dark:bg-gray-700 px-1 rounded">drive.file</code>）:
+              本アプリが作成したスプレッドシートファイルへのアクセスに限定して使用します。ユーザーのDrive内の他のファイルにはアクセスしません。
             </li>
           </ul>
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed mt-3">
@@ -85,7 +85,33 @@ export default function PrivacyPage() {
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-            5. データの保存について
+            5. データ保護メカニズム
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-3">
+            本サービスは、ユーザーの機密データを保護するために以下のセキュリティ対策を実施しています。
+          </p>
+          <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2 ml-2">
+            <li>
+              <span className="font-medium">通信の暗号化</span>: すべての通信は HTTPS（TLS）によって暗号化されます。
+            </li>
+            <li>
+              <span className="font-medium">データの暗号化保存</span>: スプレッドシートIDは AES-256-GCM（業界標準の認証付き暗号化）を使用して暗号化した上でデータベースに保存します。
+            </li>
+            <li>
+              <span className="font-medium">最小権限の原則</span>: Google API へのアクセスは、本アプリが作成したファイルのみに限定された <code className="text-sm bg-gray-100 dark:bg-gray-700 px-1 rounded">drive.file</code> スコープを使用します。ユーザーの他のファイルへはアクセスしません。
+            </li>
+            <li>
+              <span className="font-medium">セッション管理</span>: 認証トークンは HttpOnly・Secure フラグ付きの Cookie に保存され、JavaScript からのアクセスを防ぎます。
+            </li>
+            <li>
+              <span className="font-medium">アクセストークンの自動更新</span>: アクセストークンの有効期限切れを検知し、リフレッシュトークンで自動的に更新します。
+            </li>
+          </ul>
+        </section>
+
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
+            6. データの保存について
           </h2>
           <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2 ml-2">
             <li>
@@ -102,7 +128,7 @@ export default function PrivacyPage() {
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-            6. データの第三者提供
+            7. データの第三者提供
           </h2>
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
             本サービスは、ユーザーの個人情報を第三者に販売・共有・提供することは一切ありません。
@@ -111,7 +137,7 @@ export default function PrivacyPage() {
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-            7. データの削除方法
+            8. データの削除方法
           </h2>
           <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2 ml-2">
             <li>設定画面からスプレッドシートIDを削除することで、本サービスに保存された情報を削除できます。</li>
@@ -131,7 +157,7 @@ export default function PrivacyPage() {
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-            8. Cookie の使用
+            9. Cookie の使用
           </h2>
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
             本サービスはセッション管理のみを目的として Cookie を使用します。広告や分析目的での Cookie は使用しません。
@@ -140,7 +166,7 @@ export default function PrivacyPage() {
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-            9. プライバシーポリシーの変更
+            10. プライバシーポリシーの変更
           </h2>
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
             本ポリシーは必要に応じて更新することがあります。重要な変更がある場合はアプリ上でお知らせします。
