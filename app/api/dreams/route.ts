@@ -77,8 +77,51 @@ export async function POST(request: NextRequest) {
     const sheetName = "Dreams";
     let isNewSpreadsheet = false;
 
+    // フェーズ1: 既存スプレッドシートのアクセス確認（IDがある場合）
+    if (spreadsheetId) {
+      try {
+        const spreadsheet = await sheets.spreadsheets.get({
+          spreadsheetId,
+        });
+
+        const dreamsSheet = spreadsheet.data.sheets?.find(
+          (sheet) => sheet.properties?.title === sheetName
+        );
+
+        if (!dreamsSheet) {
+          // Dreamsシートが存在しない場合は作成
+          await sheets.spreadsheets.batchUpdate({
+            spreadsheetId,
+            requestBody: {
+              requests: [
+                {
+                  addSheet: {
+                    properties: {
+                      title: sheetName,
+                    },
+                  },
+                },
+              ],
+            },
+          });
+
+          await sheets.spreadsheets.values.update({
+            spreadsheetId,
+            range: `${sheetName}!A1:B1`,
+            valueInputOption: "RAW",
+            requestBody: {
+              values: [["日時", "夢"]],
+            },
+          });
+        }
+      } catch {
+        // アクセス失敗（スコープ変更・ファイル削除など）→ 新規作成へフォールバック
+        spreadsheetId = null;
+      }
+    }
+
+    // フェーズ2: IDが未設定または既存スプレッドシートへのアクセス失敗時に新規作成
     if (!spreadsheetId) {
-      // スプレッドシートが登録されていない場合は新規作成
       const createResponse = await sheets.spreadsheets.create({
         requestBody: {
           properties: {
@@ -106,72 +149,20 @@ export async function POST(request: NextRequest) {
           values: [["日時", "夢"]],
         },
       });
-      
-      if (process.env.NODE_ENV === "development") {
-        console.log(`新しいスプレッドシートを作成しました: https://docs.google.com/spreadsheets/d/${spreadsheetId}`);
-      }
 
       // 新規作成したスプレッドシートIDをDBに保存
       const encryptedId = encrypt(spreadsheetId);
-      
+
       if (userResult.rows.length === 0) {
-        // ユーザーレコードが存在しない場合は作成
         await db.execute({
           sql: "INSERT INTO users (email, spreadsheet_id) VALUES (?, ?)",
           args: [session.user.email, encryptedId],
         });
       } else {
-        // ユーザーレコードが存在する場合は更新
         await db.execute({
           sql: "UPDATE users SET spreadsheet_id = ?, updated_at = unixepoch() WHERE email = ?",
           args: [encryptedId, session.user.email],
         });
-      }
-
-      if (process.env.NODE_ENV === "development") {
-        console.log(`スプレッドシートIDをDBに保存しました (暗号化済み)`);
-      }
-    } else {
-      // 既存のスプレッドシートを使用する場合、Dreamsシートの存在を確認
-      try {
-        const spreadsheet = await sheets.spreadsheets.get({
-          spreadsheetId,
-        });
-
-        const dreamsSheet = spreadsheet.data.sheets?.find(
-          (sheet) => sheet.properties?.title === sheetName
-        );
-
-        if (!dreamsSheet) {
-          // Dreamsシートが存在しない場合は作成
-          await sheets.spreadsheets.batchUpdate({
-            spreadsheetId,
-            requestBody: {
-              requests: [
-                {
-                  addSheet: {
-                    properties: {
-                      title: sheetName,
-                    },
-                  },
-                },
-              ],
-            },
-          });
-
-          // ヘッダー行を追加
-          await sheets.spreadsheets.values.update({
-            spreadsheetId,
-            range: `${sheetName}!A1:B1`,
-            valueInputOption: "RAW",
-            requestBody: {
-              values: [["日時", "夢"]],
-            },
-          });
-        }
-      } catch (error) {
-        console.error("スプレッドシートの確認中にエラー:", error);
-        throw new Error("指定されたスプレッドシートにアクセスできません");
       }
     }
 
